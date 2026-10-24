@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#11111a">
+  <meta name="description" content="A premium trading cards and collectibles storefront demo.">
+  <title>CardVault — Trading Cards & Collectibles</title>
+  <style>
+    :root {
+      --bg: #101018;
+      --panel: #191923;
+      --panel-2: #20202c;
+      --text: #f7f6fb;
+      --muted: #a6a5b5;
+      --line: rgba(255,255,255,.1);
+      --accent: #b8f34b;
+      --accent-2: #8ed51d;
+      --purple: #8d72ff;
+      --radius: 20px;
+      --shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    button, input { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; }
+    .announcement {
+      padding: 10px 16px; text-align: center; background: var(--accent); color: #14170c;
+      font-size: 12px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
+    }
+    .announcement span { opacity: .65; margin: 0 8px; }
+    .site-header {
+      position: sticky; top: 0; z-index: 20; background: rgba(16,16,24,.92);
+      backdrop-filter: blur(18px); border-bottom: 1px solid var(--line);
+    }
+    .header-main {
+      max-width: 1240px; margin: auto; padding: 18px 24px;
+      display: flex; align-items: center; gap: 28px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; font-weight: 950; letter-spacing: -.06em; font-size: 23px; }
+    .brand-mark {
+      width: 37px; height: 37px; border-radius: 12px; display: grid; place-items: center;
+      background: var(--accent); color: #14170c; transform: rotate(-7deg);
+    }
+    .brand-mark svg { transform: rotate(7deg); }
+    .search { flex: 1; position: relative; max-width: 520px; }
+    .search input {
+      width: 100%; background: #20202a; color: var(--text); border: 1px solid var(--line);
+      border-radius: 12px; padding: 13px 44px 13px 16px; outline: none;
+    }
+    .search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(184,243,75,.12); }
+    .search svg { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .header-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-width: 42px; height: 42px; padding: 0 11px; border-radius: 12px;
+      color: var(--text); border: 1px solid var(--line); background: transparent; position: relative;
+    }
+    .icon-btn:hover { border-color: rgba(184,243,75,.65); color: var(--accent); }
+    .cart-count {
+      position: absolute; top: -6px; right: -5px; min-width: 18px; height: 18px; border-radius: 99px;
+      display: grid; place-items: center; padding: 0 4px; background: var(--accent); color: #14170c; font-size: 10px; font-weight: 900;
+    }
+    .nav-wrap { border-top: 1px solid rgba(255,255,255,.04); }
+    .nav { max-width: 1240px; margin: auto; padding: 0 24px; display: flex; align-items: center; gap: 27px; min-height: 48px; }
+    .nav a { color: #c8c7d2; font-size: 13px; font-weight: 700; transition: color .2s; }
+    .nav a:hover, .nav a.active { color: var(--accent); }
+    .nav .nav-sale { color: #ff8c9b; }
+    .menu-toggle { display: none; }
+    main { overflow: hidden; }
+    .container { width: min(1240px, calc(100% - 48px)); margin: auto; }
+    .hero { padding: 36px 0 30px; }
+    .hero-card {
+      position: relative; isolation: isolate; overflow: hidden; min-height: 430px; border-radius: 28px;
+      background:
+        radial-gradient(ellipse at 76% 38%, rgba(141,114,255,.5), transparent 32%),
+        radial-gradient(ellipse at 85% 95%, rgba(184,243,75,.14), transparent 35%),
+        linear-gradient(115deg, #24213b 0%, #171722 52%, #30224a 100%);
+      border: 1px solid rgba(255,255,255,.12); box-shadow: var(--shadow);
+      display: grid; grid-template-columns: 1.05fr .95fr;
+    }
+    .hero-copy { position: relative; z-index: 3; padding: 58px 0 55px 58px; max-width: 650px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); text-transform: uppercase; font-size: 11px; font-weight: 900; letter-spacing: .15em; }
+    .eyebrow:before { content: ""; width: 22px; height: 2px; background: currentColor; }
+    h1 { margin: 18px 0 17px; font-size: clamp(38px, 5.1vw, 65px); line-height: .99; letter-spacing: -.065em; max-width: 600px; }
+    h1 em { color: var(--accent); font-style: normal; }
+    .hero-copy p { max-width: 440px; color: #c3c1d0; font-size: 15px; line-height: 1.8; margin: 0 0 28px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 12px; padding: 14px 19px; font-weight: 900; font-size: 13px; transition: transform .2s, background .2s; }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: var(--accent); color: #14170c; }
+    .btn-primary:hover { background: #cbff6d; }
+    .btn-outline { background: rgba(255,255,255,.07); color: white; border: 1px solid rgba(255,255,255,.18); }
+    .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+    .hero-art { position: relative; min-height: 380px; display: grid; place-items: center; }
+    .orb { position: absolute; width: 330px; height: 330px; border-radius: 50%; border: 1px solid rgba(255,255,255,.13); box-shadow: 0 0 0 30px rgba(255,255,255,.025), 0 0 0 60px rgba(255,255,255,.02); }
+    .glow { position: absolute; width: 270px; height: 270px; border-radius: 50%; background: var(--purple); filter: blur(90px); opacity: .35; }
+    .card-stack { position: relative; width: 260px; height: 320px; z-index: 2; }
+    .collectible-card {
+      position: absolute; width: 174px; height: 252px; border-radius: 17px; border: 3px solid rgba(255,255,255,.88);
+      box-shadow: 0 24px 50px rgba(0,0,0,.38); overflow: hidden; padding: 10px;
+      background: linear-gradient(150deg, #f7d66e, #b975ff 45%, #212344);
+    }
+    .collectible-card:before { content: ""; position: absolute; inset: 7px; border: 1px solid rgba(255,255,255,.7); border-radius: 10px; pointer-events: none; }
+    .collectible-card.back { top: 37px; left: 4px; transform: rotate(-17deg); background: linear-gradient(135deg, #7b5cff, #2c225d 60%, #17172a); }
+    .collectible-card.front { top: 20px; left: 75px; transform: rotate(10deg); background: linear-gradient(145deg, #d9ff82, #58a68d 44%, #26234d); }
+    .card-top { display: flex; justify-content: space-between; gap: 4px; font-size: 8px; color: #161629; font-weight: 1000; text-transform: uppercase; letter-spacing: .04em; }
+    .card-art {
+      height: 145px; margin: 10px 0; border-radius: 8px; display: grid; place-items: center; overflow: hidden;
+      background: radial-gradient(circle at 50% 38%, #f6e4ff, #9d77ff 32%, #39306e 72%);
+    }
+    .card-art svg { width: 100px; height: 100px; filter: drop-shadow(0 9px 10px rgba(0,0,0,.25)); }
+    .front .card-art { background: radial-gradient(circle at 50% 35%, #f8ffbc, #a6e64f 35%, #3a8065 75%); }
+    .card-bottom { color: #171724; font-size: 8px; font-weight: 800; line-height: 1.35; }
+    .card-shine { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.45) 40%, transparent 55%); mix-blend-mode: screen; pointer-events: none; }
+    .floating-tag { position: absolute; z-index: 4; background: rgba(25,25,35,.9); border: 1px solid rgba(255,255,255,.13); border-radius: 13px; padding: 10px 13px; box-shadow: 0 12px 35px rgba(0,0,0,.25); font-size: 11px; font-weight: 800; }
+    .floating-tag small { display: block; color: var(--muted); font-size: 9px; font-weight: 600; }
+    .tag-one { top: 62px; right: 17px; transform: rotate(5deg); }
+    .tag-two { bottom: 54px; left: 2px; transform: rotate(-5deg); }
+    .trust-strip { display: grid; grid-template-columns: repeat(4,1fr); border: 1px solid var(--line); background: #171720; border-radius: 16px; margin-top: 18px; padding: 17px 12px; }
+    .trust-item { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 4px 8px; color: #d8d7e1; font-size: 12px; font-weight: 750; }
+    .trust-item:not(:last-child) { border-right: 1px solid var(--line); }
+    .trust-item svg { color: var(--accent); flex-shrink: 0; }
+    section.content-section { padding: 50px 0; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 24px; }
+    .section-kicker { color: var(--accent); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .16em; }
+    h2 { font-size: clamp(25px, 3vw, 34px); letter-spacing: -.045em; line-height: 1.1; margin: 8px 0 0; }
+    .section-head p { margin: 9px 0 0; color: var(--muted); font-size: 13px; }
+    .text-link { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 900; color: var(--accent); white-space: nowrap; }
+    .category-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 15px; }
+    .category-card {
+      min-height: 230px; border: 1px solid var(--line); border-radius: 19px; overflow: hidden; position: relative;
+      background: linear-gradient(145deg, var(--cat-a), var(--cat-b)); padding: 22px; display: flex; align-items: end;
+      isolation: isolate; transition: transform .25s, border-color .25s;
+    }
+    .category-card:hover { transform: translateY(-5px); border-color: rgba(184,243,75,.55); }
+    .category-card:before { content: ""; position: absolute; z-index: -1; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,.12); right: -38px; top: -48px; }
+    .category-card:after { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(0deg, rgba(10,10,17,.9), transparent 75%); }
+    .category-visual { position: absolute; top: 19px; right: 16px; width: 130px; height: 125px; display: grid; place-items: center; transform: rotate(7deg); transition: transform .3s; }
+    .category-card:hover .category-visual { transform: rotate(0deg) scale(1.06); }
+    .category-visual svg { width: 100%; height: 100%; filter: drop-shadow(0 15px 14px rgba(0,0,0,.25)); }
+    .category-info { position: relative; z-index: 2; }
+    .category-info h3 { margin: 0 0 5px; font-size: 17px; letter-spacing: -.03em; }
+    .category-info span { color: #d0cfdb; font-size: 11px; }
+    .category-arrow { position: absolute; right: 18px; bottom: 19px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.13); }
+    .cat-pokemon { --cat-a:#3d642e; --cat-b:#172e26; }
+    .cat-sports { --cat-a:#344c84; --cat-b:#1b1d36; }
+    .cat-tcg { --cat-a:#69408a; --cat-b:#271a3d; }
+    .cat-accessories { --cat-a:#8b542a; --cat-b:#32221a; }
+    .product-toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn { border: 1px solid var(--line); background: transparent; color: #bcbac9; padding: 9px 14px; border-radius: 99px; font-size: 11px; font-weight: 800; }
+    .filter-btn.active, .filter-btn:hover { background: var(--accent); color: #15170e; border-color: var(--accent); }
+    .product-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 15px; }
+    .product-card { border: 1px solid var(--line); border-radius: 17px; overflow: hidden; background: #181821; transition: transform .2s, border-color .2s; }
+    .product-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,.24); }
+    .product-image { height: 215px; position: relative; display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle at 50% 38%, var(--p-glow), #242330 68%); }
+    .product-image:before { content:""; position:absolute; width:150px; height:150px; border:1px solid rgba(255,255,255,.13); border-radius:50%; box-shadow:0 0 0 18px rgba(255,255,255,.025); }
+    .product-image svg { width: 140px; height: 160px; position: relative; z-index: 1; filter: drop-shadow(0 17px 15px rgba(0,0,0,.35)); transition: transform .25s; }
+    .product-card:hover .product-image svg { transform: translateY(-5px) rotate(-3deg); }
+    .product-badge { position: absolute; top: 12px; left: 12px; z-index: 2; background: var(--accent); color: #16180e; font-size: 9px; font-weight: 950; text-transform: uppercase; letter-spacing: .07em; padding: 6px 8px; border-radius: 6px; }
+    .product-badge.purple { background: #a18cff; color: #171324; }
+    .product-badge.pink { background: #ff9db0; color: #2a1017; }
+    .product-details { padding: 15px; }
+    .product-type { color: var(--muted); font-size: 9px; text-transform: uppercase; font-weight: 850; letter-spacing: .12em; }
+    .product-details h3 { margin: 7px 0 12px; font-size: 13px; line-height: 1.4; min-height: 37px; }
+    .product-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .price { font-size: 16px; font-weight: 950; }
+    .add-cart { border: 1px solid rgba(184,243,75,.4); background: rgba(184,243,75,.09); color: var(--accent); width: 35px; height: 35px; display: grid; place-items: center; border-radius: 10px; }
+    .add-cart:hover { background: var(--accent); color: #171a0d; }
+    .promo-banner {
+      border: 1px solid rgba(255,255,255,.12); border-radius: 23px; padding: 34px 40px;
+      display: flex; align-items: center; justify-content: space-between; gap: 25px; overflow: hidden;
+      background: radial-gradient(circle at 85% 15%, rgba(184,243,75,.16), transparent 35%), linear-gradient(105deg,#242b24,#191923 60%,#252d1d);
+    }
+    .promo-banner h2 { max-width: 560px; }
+    .promo-banner p { color: #b9b8c5; font-size: 13px; max-width: 540px; margin: 12px 0 0; }
+    .promo-icon { flex-shrink: 0; width: 120px; height: 120px; border-radius: 30px; display: grid; place-items: center; background: rgba(184,243,75,.1); border: 1px solid rgba(184,243,75,.3); transform: rotate(8deg); color: var(--accent); }
+    .newsletter { background: #1a1925; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 42px 0; }
+    .newsletter-inner { display: flex; justify-content: space-between; align-items: center; gap: 30px; }
+    .newsletter h2 { font-size: 26px; }
+    .newsletter p { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+    .newsletter-form { display: flex; width: min(430px,100%); gap: 8px; }
+    .newsletter-form input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 11px; background: #111119; color: white; padding: 13px 14px; outline: none; }
+    .newsletter-form input:focus { border-color: var(--accent); }
+    footer { padding: 36px 0 22px; }
+    .footer-main { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 35px; padding-bottom: 30px; }
+    .footer-about p { max-width: 290px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+    .footer-col h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; margin: 4px 0 15px; }
+    .footer-col a { display: block; color: var(--muted); font-size: 12px; margin: 10px 0; }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom { border-top: 1px solid var(--line); padding-top: 17px; display: flex; justify-content: space-between; gap: 15px; color: #777686; font-size: 10px; }
+    .toast { position: fixed; z-index: 50; bottom: 22px; left: 50%; transform: translate(-50%, 25px); opacity: 0; pointer-events: none; background: var(--accent); color: #14170c; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 900; box-shadow: var(--shadow); transition: .25s; }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+    .mobile-nav { display: none; }
+    .empty-state { display: none; color: var(--muted); padding: 25px 0; font-size: 13px; }
+    @media (max-width: 980px) {
+      .header-main { gap: 16px; }
+      .header-actions .account-label { display: none; }
+      .hero-card { grid-template-columns: 1fr .8fr; }
+      .hero-copy { padding: 45px 0 45px 38px; }
+      .hero-art { transform: scale(.85); }
+      .category-grid, .product-grid { grid-template-columns: repeat(2,1fr); }
+      .category-card { min-height: 220px; }
+      .footer-main { grid-template-columns: 1.3fr 1fr 1fr; }
+      .footer-col:last-child { display: none; }
+    }
+    @media (max-width: 680px) {
+      .announcement { font-size: 9px; padding: 9px 8px; letter-spacing: .06em; }
+      .header-main { padding: 13px 16px; flex-wrap: wrap; gap: 12px; }
+      .brand { font-size: 21px; }
+      .brand-mark { width: 33px; height: 33px; }
+      .header-actions { gap: 6px; }
+      .icon-btn { min-width: 37px; width: 37px; height: 37px; padding: 0; }
+      .menu-toggle { display: inline-flex; }
+      .search { order: 3; flex-basis: 100%; max-width: none; }
+      .search input { padding-top: 11px; padding-bottom: 11px; }
+      .nav-wrap { display: none; }
+      .nav-wrap.open { display: block; }
+      .nav { padding: 10px 16px 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 0 15px; }
+      .nav a { padding: 11px 0; border-bottom: 1px solid var(--line); }
+      .container { width: min(100% - 32px, 500px); }
+      .hero { padding-top: 18px; }
+      .hero-card { display: flex; flex-direction: column; min-height: unset; border-radius: 21px; }
+      .hero-copy { padding: 33px 25px 0; }
+      h1 { font-size: clamp(38px, 12vw, 54px); }
+      .hero-copy p { font-size: 13px; }
+      .hero-buttons .btn { padding: 12px 14px; }
+      .hero-art { min-height: 285px; width: 100%; transform: scale(.82); margin: -2px 0 -22px; }
+      .orb { width: 240px; height: 240px; }
+      .trust-strip { grid-template-columns: 1fr 1fr; padding: 10px; gap: 4px; }
+      .trust-item { justify-content: flex-start; padding: 10px 7px; font-size: 10px; }
+      .trust-item:nth-child(2) { border-right: 0; }
+      .trust-item:nth-child(1), .trust-item:nth-child(2) { border-bottom: 1px solid var(--line); }
+      section.content-section { padding: 35px 0; }
+      .section-head { align-items: flex-start; flex-direction: column; margin-bottom: 18px; }
+      .section-head .text-link { margin-top: -4px; }
+      .category-grid { gap: 10px; }
+      .category-card { min-height: 190px; padding: 15px; border-radius: 15px; }
+      .category-visual { width: 100px; height: 100px; right: 5px; top: 10px; }
+      .category-info h3 { font-size: 14px; }
+      .category-info span { font-size: 10px; }
+      .category-arrow { width: 27px; height: 27px; right: 12px; bottom: 12px; }
+      .product-grid { gap: 10px; }
+      .product-image { height: 170px; }
+      .product-image svg { width: 115px; height: 135px; }
+      .product-details { padding: 11px; }
+      .product-details h3 { font-size: 12px; min-height: 50px; }
+      .price { font-size: 14px; }
+      .product-toolbar { gap: 6px; }
+      .filter-btn { padding: 8px 11px; font-size: 10px; }
+      .promo-banner { padding: 26px 22px; align-items: flex-start; }
+      .promo-icon { width: 65px; height: 65px; border-radius: 18px; }
+      .promo-icon svg { width: 30px; }
+      .promo-banner h2 { font-size: 23px; }
+      .newsletter-inner { flex-direction: column; align-items: stretch; gap: 20px; }
+      .newsletter-form { width: 100%; }
+      .newsletter-form .btn { padding: 12px; }
+      .footer-main { grid-template-columns: 1fr 1fr; gap: 25px 18px; }
+      .footer-about { grid-column: 1 / -1; }
+      .footer-col:last-child { display: block; }
+      .footer-bottom { flex-direction: column; }
+    }
+    @media (max-width: 370px) {
+      .category-card { min-height: 170px; }
+      .category-visual { width: 80px; height: 85px; }
+      .hero-buttons { flex-direction: column; align-items: stretch; }
+      .hero-buttons .btn { width: 100%; }
+      .newsletter-form { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="announcement">Collector’s drop is live <span>✦</span> Discover your next grail <span>✦</span> Free shipping on demo orders over $75</div>
+  <header class="site-header">
+    <div class="header-main">
+      <a class="brand" href="#home" aria-label="CardVault home">
+        <span class="brand-mark">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3.8h9.5a2 2 0 0 1 2 2v13.4a1 1 0 0 1-1.5.87l-4.7-2.7-4.7 2.7a1 1 0 0 1-1.5-.87V5.8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/><path d="M9 8h5.5M9 11.5h5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        CARDVAULT<span style="color:var(--accent)">.</span>
+      </a>
+      <label class="search">
+        <input id="searchInput" type="search" placeholder="Search cards, sets, collectibles..." aria-label="Search products">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </label>
+      <div class="header-actions">
+        <button class="icon-btn" id="accountBtn" aria-label="Account" title="Account">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.6-3.5 3-5.3 7-5.3s6.4 1.8 7 5.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span class="account-label" style="font-size:12px;font-weight:800">Account</span>
+        </button>
+        <button class="icon-btn" id="cartBtn" aria-label="Shopping cart" title="Shopping cart">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 4h2l2.1 10.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.3" fill="currentColor"/><circle cx="17.5" cy="20" r="1.3" fill="currentColor"/></svg>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+        <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="nav-wrap" id="navWrap">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="active" href="#home">Home</a>
+        <a href="#categories">Shop Categories</a>
+        <a href="#featured">Featured Finds</a>
+        <a href="#featured" data-filter-link="sealed">Sealed Products</a>
+        <a href="#featured" data-filter-link="singles">Singles</a>
+        <a href="#featured" class="nav-sale">Hot Deals ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero container">
+      <div class="hero-card">
+        <div class="hero-copy">
+          <span class="eyebrow">For collectors. By collectors.</span>
+          <h1>Find your next <em>grail.</em></h1>
+          <p>From iconic trading cards to hard-to-find collectibles, discover the pieces that make your collection unforgettable.</p>
+          <div class="hero-buttons">
+            <a class="btn btn-primary" href="#categories">Explore the collection <span aria-hidden="true">↗</span></a>
+            <a class="btn btn-outline" href="#featured">Shop featured finds</a>
+          </div>
+        </div>
+        <div class="hero-art" aria-label="Illustration of collectible trading cards">
+          <div class="glow"></div><div class="orb"></div>
+          <div class="floating-tag tag-one">✦ Collector approved<small>Curated finds, all in one place</small></div>
+          <div class="card-stack">
+            <div class="collectible-card back">
+              <div class="card-top"><span>CV • 008</span><span>★ ★ ★</span></div>
+              <div class="card-art">
+                <svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M50 8 62 30 87 25 76 48 94 66 67 69 58 94 43 73 17 82 25 56 7 39 34 36Z" fill="#d9c5ff" stroke="#fff" stroke-width="2"/><circle cx="50" cy="50" r="15" fill="#6c4db5" stroke="#fff" stroke-width="2"/><path d="m42 49 6 6 12-14" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="card-bottom">VAULT SERIES<br>LIMITED EDITION</div><div class="card-shine"></div>
+            </div>
+            <div class="collectible-card front">
+              <div class="card-top"><span>CV • 024</span><span>ULTRA RARE</span></div>
+              <div class="card-art">
+                <svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M51 8 64 27 85 20 78 43 94 56 73 66 75 88 53 78 35 94 30 71 8 66 22 48 13 28 37 30Z" fill="#f0ffb7" stroke="#fff" stroke-width="2"/><path d="M49 24 58 43 78 45 63 58 67 77 50 67 33 77 37 58 22 45 42 43Z" fill="#3b946f" stroke="#eaffc8" stroke-width="2"/><circle cx="50" cy="50" r="8" fill="#eaffc8"/></svg>
+              </div>
+              <div class="card-bottom">THE CHASE CARD<br>COLLECTOR'S PICK</div><div class="card-shine"></div>
+            </div>
+          </div>
+          <div class="floating-tag tag-two">✦ The hunt starts here<small>Make room for one more</small></div>
+        </div>
+      </div>
+      <div class="trust-strip" aria-label="Store benefits">
+        <div class="trust-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m12 3 7 3v5c0 4.5-3 7.5-7 10-4-2.5-7-5.5-7-10V6l7-3Z" stroke="currentColor" stroke-width="1.7"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Collector-focused curation</div>
+        <div class="trust-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="7" cy="19" r="2" fill="currentColor"/><circle cx="18" cy="19" r="2" fill="currentColor"/></svg>Careful, secure shipping</div>
+        <div class="trust-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 15 9l6 .9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.9 9 9l3-6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Discover standout finds</div>
+        <div class="trust-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 16 0v5a2 2 0 0 1-2 2h-2v-6h4M4 13h4v6H6a2 2 0 0 1-2-2v-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Here for the hobby</div>
+      </div>
+    </section>
+
+    <section class="content-section container" id="categories">
+      <div class="section-head">
+        <div><span class="section-kicker">Explore your obsession</span><h2>Shop by category</h2><p>Your next favorite find is just a few clicks away.</p></div>
+        <a class="text-link" href="#featured">Browse all categories <span>↗</span></a>
+      </div>
+      <div class="category-grid">
+        <a class="category-card cat-pokemon" href="#featured" data-category="tcg">
+          <div class="category-visual"><svg viewBox="0 0 140 140" fill="none" aria-hidden="true"><g transform="rotate(-12 70 70)"><rect x="25" y="8" width="83" height="119" rx="9" fill="#f3e8a5" stroke="#fff" stroke-width="3"/><rect x="32" y="15" width="69" height="105" rx="5" fill="#c7f078"/><circle cx="66" cy="62" r="27" fill="#f5c84c" stroke="#fff" stroke-width="3"/><path d="M47 61 58 45l12 12 10-5 6 17-16 15-19-8Z" fill="#e98b38" stroke="#fff" stroke-width="2"/><path d="M48 29h36" stroke="#7b6c2b" stroke-width="3" stroke-linecap="round"/><path d="M43 99h46M43 106h30" stroke="#7b6c2b" stroke-width="3" stroke-linecap="round"/></g></svg></div>
+          <div class="category-info"><h3>Pokémon & TCG</h3><span>Discover your next chase</span></div><span class="category-arrow">↗</span>
+        </a>
+        <a class="category-card cat-sports" href="#featured" data-category="singles">
+          <div class="category-visual"><svg viewBox="0 0 140 140" fill="none" aria-hidden="true"><g transform="rotate(9 70 70)"><rect x="25" y="7" width="84" height="124" rx="9" fill="#e9e8f1" stroke="#fff" stroke-width="3"/><rect x="32" y="14" width="70" height="110" rx="5" fill="#426ab5"/><path d="M32 82 102 34v48L32 119Z" fill="#e8b94f"/><circle cx="66" cy="47" r="17" fill="#e5b78c"/><path d="M48 43q18-26 36 0l-4-12-29 1Z" fill="#252744"/><path d="M46 68q20-15 40 0l9 34H37Z" fill="#f2f0e7"/><path d="m61 72 6 9 6-9" stroke="#426ab5" stroke-width="3"/><path d="M40 108h53" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g></svg></div>
+          <div class="category-info"><h3>Sports Cards</h3><span>Legends, rookies & more</span></div><span class="category-arrow">↗</span>
+        </a>
+        <a class="category-card cat-tcg" href="#featured" data-category="sealed">
+          <div class="category-visual"><svg viewBox="0 0 140 140" fill="none" aria-hidden="true"><g transform="rotate(-8 70 70)"><rect x="23" y="16" width="90" height="109" rx="7" fill="#bca4ff" stroke="#fff" stroke-width="3"/><rect x="31" y="24" width="74" height="93" rx="4" fill="#553e90"/><path d="m68 35 9 19 21 3-15 15 4 21-19-10-19 10 4-21-15-15 21-3Z" fill="#e9ddff"/><circle cx="68" cy="69" r="17" stroke="#a98cff" stroke-width="3"/><path d="M43 103h50" stroke="#e9ddff" stroke-width="3" stroke-linecap="round"/></g></svg></div>
+          <div class="category-info"><h3>Sealed Products</h3><span>Boxes, packs & bundles</span></div><span class="category-arrow">↗</span>
+        </a>
+        <a class="category-card cat-accessories" href="#featured" data-category="accessories">
+          <div class="category-visual"><svg viewBox="0 0 140 140" fill="none" aria-hidden="true"><g transform="rotate(8 70 70)"><rect x="26" y="20" width="88" height="98" rx="11" fill="#edc5a0" stroke="#fff" stroke-width="3"/><rect x="34" y="28" width="72" height="82" rx="7" fill="#77452c"/><rect x="43" y="39" width="54" height="60" rx="5" fill="#e7d7bb"/><rect x="49" y="45" width="42" height="48" rx="3" fill="#a7c7c1"/><path d="M70 53v32M54 69h32" stroke="#f9f5e9" stroke-width="5" stroke-linecap="round"/><path d="M45 16h50" stroke="#fff" stroke-width="5" stroke-linecap="round"/></g></svg></div>
+          <div class="category-info"><h3>Storage & Supplies</h3><span>Protect your collection</span></div><span class="category-arrow">↗</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="content-section container" id="featured">
+      <div class="section-head">
+        <div><span class="section-kicker">Handpicked for collectors</span><h2>Featured finds</h2><p>A sample of the kind of products your store could showcase.</p></div>
+        <div class="product-toolbar" role="group" aria-label="Filter products">
+          <button class="filter-btn active" data-filter="all">All finds</button>
+          <button class="filter-btn" data-filter="sealed">Sealed</button>
+          <button class="filter-btn" data-filter="singles">Singles</button>
+          <button class="filter-btn" data-filter="accessories">Supplies</button>
+        </div>
+      </div>
+      <div class="product-grid" id="productGrid">
+        <article class="product-card" data-type="sealed" data-name="collector mystery booster box">
+          <div class="product-image" style="--p-glow:#5d4e88"><span class="product-badge">Collector pick</span><svg viewBox="0 0 140 160" fill="none" aria-hidden="true"><g transform="rotate(-5 70 80)"><path d="M25 31 70 9l45 22v96l-45 19-45-19Z" fill="#4c3d82" stroke="#d8ccff" stroke-width="2"/><path d="m25 31 45 23 45-23M70 54v90" stroke="#b8a4ff" stroke-width="2"/><path d="m70 62 9 18 20 3-15 14 4 20-18-10-18 10 4-20-15-14 20-3Z" fill="#e5dcff"/><path d="M41 39h20M41 45h14M82 39h17" stroke="#e5dcff" stroke-width="2" stroke-linecap="round"/></g></svg></div>
+          <div class="product-details"><div class="product-type">Sealed product</div><h3>Mystery Collector Booster Box</h3><div class="product-bottom"><span class="price">$49.99</span><button class="add-cart" aria-label="Add Mystery Collector Booster Box to cart" data-product="Mystery Collector Booster Box"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div></div>
+        </article>
+        <article class="product-card" data-type="singles" data-name="rookie star sports trading card">
+          <div class="product-image" style="--p-glow:#8c6d45"><span class="product-badge purple">Fan favorite</span><svg viewBox="0 0 140 160" fill="none" aria-hidden="true"><g transform="rotate(6 70 80)"><rect x="25" y="7" width="90" height="146" rx="8" fill="#f0e8d6" stroke="#fff" stroke-width="2"/><rect x="31" y="13" width="78" height="134" rx="5" fill="#283b65"/><path d="M31 85 109 39v48l-78 48Z" fill="#d2a34b"/><circle cx="70" cy="46" r="19" fill="#d7a77e"/><path d="M50 43q20-28 40 0l-5-15H56Z" fill="#252438"/><path d="M47 68q23-18 46 0l8 47H39Z" fill="#f2eee4"/><path d="m62 70 8 12 8-12" stroke="#253d71" stroke-width="3"/><path d="M43 126h54" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></g></svg></div>
+          <div class="product-details"><div class="product-type">Sports singles</div><h3>Rookie Star Trading Card</h3><div class="product-bottom"><span class="price">$24.00</span><button class="add-cart" aria-label="Add Rookie Star Trading Card to cart" data-product="Rookie Star Trading Card"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div></div>
+        </article>
+        <article class="product-card" data-type="sealed" data-name="limited edition vault card pack">
+          <div class="product-image" style="--p-glow:#386c62"><span class="product-badge pink">Limited style</span><svg viewBox="0 0 140 160" fill="none" aria-hidden="true"><g transform="rotate(-4 70 80)"><path d="M29 25 70 9l41 16v111l-41 15-41-15Z" fill="#a7d965" stroke="#eaffc9" stroke-width="2"/><path d="M29 25 70 46l41-21M70 46v105" stroke="#eaffc9" stroke-width="2"/><circle cx="70" cy="78" r="27" fill="#3c8065" stroke="#efffc5" stroke-width="2"/><path d="m70 57 7 14 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2Z" fill="#edffc7"/><path d="M45 34h15M80 34h15" stroke="#edffc7" stroke-width="2" stroke-linecap="round"/></g></svg></div>
+          <div class="product-details"><div class="product-type">Collector edition</div><h3>Vault Series Limited Pack</h3><div class="product-bottom"><span class="price">$17.50</span><button class="add-cart" aria-label="Add Vault Series Limited Pack to cart" data-product="Vault Series Limited Pack"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div></div>
+        </article>
+        <article class="product-card" data-type="accessories" data-name="premium card sleeves storage kit">
+          <div class="product-image" style="--p-glow:#8a593b"><span class="product-badge">Must-have</span><svg viewBox="0 0 140 160" fill="none" aria-hidden="true"><g transform="rotate(5 70 80)"><rect x="24" y="26" width="92" height="108" rx="10" fill="#8b5737" stroke="#f3d3b1" stroke-width="2"/><rect x="33" y="35" width="74" height="90" rx="6" fill="#e6d8bd"/><rect x="42" y="44" width="56" height="72" rx="5" fill="#8ebdb0"/><rect x="49" y="51" width="42" height="58" rx="3" fill="#d6efe2"/><path d="M70 61v38M51 80h38" stroke="#5b9585" stroke-width="5" stroke-linecap="round"/><path d="M43 21h54" stroke="#f3d3b1" stroke-width="5" stroke-linecap="round"/></g></svg></div>
+          <div class="product-details"><div class="product-type">Storage & supplies</div><h3>Premium Card Protection Kit</h3><div class="product-bottom"><span class="price">$12.99</span><button class="add-cart" aria-label="Add Premium Card Protection Kit to cart" data-product="Premium Card Protection Kit"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div></div>
+        </article>
+      </div>
+      <p class="empty-state" id="emptyState">No demo products match your search. Try another keyword.</p>
+    </section>
+
+    <section class="container content-section">
+      <div class="promo-banner">
+        <div><span class="section-kicker">Every collection has a story</span><h2>Keep your best pulls in mint condition.</h2><p>Find sleeves, binders and storage essentials made for collectors who care about every corner, edge and foil.</p><a href="#categories" class="btn btn-primary" style="margin-top:20px">Explore collector supplies <span>↗</span></a></div>
+        <div class="promo-icon"><svg width="55" height="55" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3.5h10a2 2 0 0 1 2 2v14a1 1 0 0 1-1.5.87L12 17l-5.5 3.37A1 1 0 0 1 5 19.5v-14a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.4"/><path d="m8.5 10 2.2 2.2 4.8-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </div>
+    </section>
+
+    <section class="newsletter">
+      <div class="container newsletter-inner">
+        <div><span class="section-kicker">Stay in the loop</span><h2>Good finds. No missed drops.</h2><p>Get new arrivals, collector news and special offers in your inbox.</p></div>
+        <form class="newsletter-form" id="newsletterForm"><input type="email" id="emailInput" placeholder="Your email address" aria-label="Email address" required><button class="btn btn-primary" type="submit">Sign me up ↗</button></form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-main">
+        <div class="footer-about"><a class="brand" href="#home"><span class="brand-mark"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M7 3.8h9.5a2 2 0 0 1 2 2v13.4a1 1 0 0 1-1.5.87l-4.7-2.7-4.7 2.7a1 1 0 0 1-1.5-.87V5.8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/></svg></span>CARDVAULT<span style="color:var(--accent)">.</span></a><p>A concept storefront for the collectors, the card hunters and everyone chasing that one special pull.</p></div>
+        <div class="footer-col"><h4>Explore</h4><a href="#categories">Shop categories</a><a href="#featured">Featured finds</a><a href="#featured">New arrivals</a><a href="#featured">Deals & bundles</a></div>
+        <div class="footer-col"><h4>Customer care</h4><a href="#home" data-demo="Shipping information">Shipping information</a><a href="#home" data-demo="Returns & exchanges">Returns & exchanges</a><a href="#home" data-demo="Contact the team">Contact the team</a><a href="#home" data-demo="Frequently asked questions">FAQs</a></div>
+        <div class="footer-col"><h4>The details</h4><a href="#home" data-demo="About CardVault">About us</a><a href="#home" data-demo="Privacy policy">Privacy policy</a><a href="#home" data-demo="Terms of service">Terms of service</a></div>
+      </div>
+      <div class="footer-bottom"><span>© <span id="year"></span> CardVault. Demo concept — brand and products are illustrative.</span><span>Made for the love of collecting ✦</span></div>
+    </div>
+  </footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+      const toast = $('#toast');
+      let toastTimer;
+      let cartCount = 0;
+      let activeFilter = 'all';
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+      }
+
+      $('#year').textContent = new Date().getFullYear();
+
+      $('#menuToggle').addEventListener('click', () => {
+        const open = $('#navWrap').classList.toggle('open');
+        $('#menuToggle').setAttribute('aria-expanded', String(open));
+      });
+
+      $$('.add-cart').forEach(button => {
+        button.addEventListener('click', () => {
+          cartCount += 1;
+          $('#cartCount').textContent = cartCount;
+          showToast(`${button.dataset.product} added to your demo cart`);
+        });
+      });
+
+      $('#cartBtn').addEventListener('click', () => {
+        showToast(cartCount ? `Your demo cart has ${cartCount} item${cartCount === 1 ? '' : 's'}.` : 'Your demo cart is empty — add a featured find!');
+      });
+
+      $('#accountBtn').addEventListener('click', () => showToast('Account sign-in would connect here in the live store.'));
+
+      function filterProducts() {
+        const query = $('#searchInput').value.trim().toLowerCase();
+        let visible = 0;
+        $$('.product-card').forEach(card => {
+          const matchesFilter = activeFilter === 'all' || card.dataset.type === activeFilter;
+          const matchesSearch = !query || `${card.dataset.name} ${card.textContent}`.toLowerCase().includes(query);
+          const show = matchesFilter && matchesSearch;
+          card.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        $('#emptyState').style.display = visible ? 'none' : 'block';
+      }
+
+      $('#searchInput').addEventListener('input', filterProducts);
+      $$('.filter-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          activeFilter = button.dataset.filter;
+          $$('.filter-btn').forEach(item => item.classList.toggle('active', item === button));
+          filterProducts();
+        });
+      });
+
+      $$('[data-filter-link]').forEach(link => {
+        link.addEventListener('click', () => {
+          activeFilter = link.dataset.filterLink;
+          $$('.filter-btn').forEach(button => button.classList.toggle('active', button.dataset.filter === activeFilter));
+          filterProducts();
+          if (window.innerWidth <= 680) {
+            $('#navWrap').classList.remove('open');
+            $('#menuToggle').setAttribute('aria-expanded', 'false');
+          }
+        });
+      });
+
+      $$('[data-category]').forEach(link => {
+        link.addEventListener('click', () => {
+          const type = link.dataset.category;
+          activeFilter = type === 'accessories' ? 'accessories' : type;
+          $$('.filter-btn').forEach(button => button.classList.toggle('active', button.dataset.filter === activeFilter));
+          filterProducts();
+        });
+      });
+
+      $('#newsletterForm').addEventListener('submit', event => {
+        event.preventDefault();
+        const email = $('#emailInput').value.trim();
+        if (!email) return;
+        showToast('Thanks! Newsletter signup is demo-only.');
+        event.target.reset();
+      });
+
+      $$('[data-demo]').forEach(link => link.addEventListener('click', event => {
+        event.preventDefault();
+        showToast(`${link.dataset.demo} page would be linked in the live store.`);
+      }));
+    })();
+  </script>
+</body>
+</html>
